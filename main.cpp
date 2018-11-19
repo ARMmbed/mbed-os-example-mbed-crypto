@@ -26,17 +26,6 @@
 #define mbedtls_printf printf
 #endif
 
-#define ASSERT(predicate)                                                     \
-    do                                                                        \
-    {                                                                         \
-        if(!(predicate))                                                      \
-        {                                                                     \
-            mbedtls_printf( "\tassertion failed at %s:%d - '%s'\r\n",         \
-                            __FILE__, __LINE__, #predicate);                  \
-            goto exit;                                                        \
-        }                                                                     \
-    } while (0)
-
 #define ASSERT_STATUS(actual, expected)                                       \
     do                                                                        \
     {                                                                         \
@@ -341,7 +330,7 @@ static void cipher_examples(void)
 
 int main(void)
 {
-    ASSERT(psa_crypto_init() == PSA_SUCCESS);
+    ASSERT_STATUS(psa_crypto_init(), PSA_SUCCESS);
     cipher_examples();
 exit:
     mbedtls_psa_crypto_free();
