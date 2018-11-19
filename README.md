@@ -1,6 +1,6 @@
-# Running Mbed-Crypto examples on Mbed-OS
+# Running Mbed Crypto examples on Mbed OS
 This repository contains a set of examples demonstrating the compilation and use
-of Mbed-Crypto on Mbed-OS.
+of Mbed Crypto on Mbed OS.
 
 List of examples contained within this repository:
 * Cipher encrypt/decrypt using an AES key in cipher block chain (CBC) mode with no padding using a single block.
@@ -8,13 +8,13 @@ List of examples contained within this repository:
 * Cipher encrypt/decrypt using an AES key in counter (CTR) mode using multiple blocks.
 
 ## Prerequisites
-* Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed-CLI</a>
+* Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed CLI</a>
 
 ## Deploy
 The following are the steps required for deployment:
 * Clone this repository: `git clone git@github.com:ARMmbed/mbed-os-example-mbed-crypto.git`
-* CD to `mbed-os-example-mbed-crypto`
-* Fetch Mbed-OS: `mbed deploy`
+* Change your current directory: `cd mbed-os-example-mbed-crypto`
+* Fetch Mbed OS: `mbed deploy`
 
 ## Compile
 To compile the example program use `mbed compile` while specifying the target platform and the compiler.
@@ -26,7 +26,7 @@ Once the compilation is completed successfully a binary file will be created: `.
 The following are the steps required to run the example program:
 * Connect the Mbed device to your computer over USB.
 * Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
-* Connect to the Mbed Device using an ssh client application of your choice.
+* Connect to the Mbed Device using a serial client application of your choice.
 * Press the reset button on the Mbed device to run the program.
 
 The expected output from a successful execution of the example program should be as follows:
