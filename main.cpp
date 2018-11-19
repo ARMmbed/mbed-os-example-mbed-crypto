@@ -32,7 +32,7 @@
         if((actual) != (expected))                                            \
         {                                                                     \
             mbedtls_printf( "\tassertion failed at %s:%d - "                  \
-                            "actual:%" PRId32 "expected:%" PRId32 "\r\n",     \
+                            "actual:%" PRId32 "expected:%" PRId32 "\n",     \
                             __FILE__, __LINE__,                               \
                             (psa_status_t) actual, (psa_status_t) expected ); \
             goto exit;                                                        \
@@ -44,12 +44,12 @@
     !defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
 int main(void)
 {
-    mbedtls_printf("Not all of the required options are defined:\r\n"
-                   "  - MBEDTLS_PSA_CRYPTO_C\r\n"
-                   "  - MBEDTLS_AES_C\r\n"
-                   "  - MBEDTLS_CIPHER_MODE_CBC\r\n"
-                   "  - MBEDTLS_CIPHER_MODE_CTR\r\n"
-                   "  - MBEDTLS_CIPHER_MODE_WITH_PADDING\r\n");
+    mbedtls_printf("Not all of the required options are defined:\n"
+                   "  - MBEDTLS_PSA_CRYPTO_C\n"
+                   "  - MBEDTLS_AES_C\n"
+                   "  - MBEDTLS_CIPHER_MODE_CBC\n"
+                   "  - MBEDTLS_CIPHER_MODE_CTR\n"
+                   "  - MBEDTLS_CIPHER_MODE_WITH_PADDING\n");
     return 0;
 }
 #else
@@ -309,22 +309,22 @@ static void cipher_examples(void)
 {
     psa_status_t status;
 
-    mbedtls_printf("cipher encrypt/decrypt AES CBC no padding:\r\n");
+    mbedtls_printf("cipher encrypt/decrypt AES CBC no padding:\n");
     status = cipher_example_encrypt_decrypt_aes_cbc_nopad_1_block();
     if (status == PSA_SUCCESS) {
-        mbedtls_printf("\tsuccess!\r\n");
+        mbedtls_printf("\tsuccess!\n");
     }
 
-    mbedtls_printf("cipher encrypt/decrypt AES CBC PKCS7 multipart:\r\n");
+    mbedtls_printf("cipher encrypt/decrypt AES CBC PKCS7 multipart:\n");
     status = cipher_example_encrypt_decrypt_aes_cbc_pkcs7_multi();
     if (status == PSA_SUCCESS) {
-        mbedtls_printf("\tsuccess!\r\n");
+        mbedtls_printf("\tsuccess!\n");
     }
 
-    mbedtls_printf("cipher encrypt/decrypt AES CTR multipart:\r\n");
+    mbedtls_printf("cipher encrypt/decrypt AES CTR multipart:\n");
     status = cipher_example_encrypt_decrypt_aes_ctr_multi();
     if (status == PSA_SUCCESS) {
-        mbedtls_printf("\tsuccess!\r\n");
+        mbedtls_printf("\tsuccess!\n");
     }
 }
 
