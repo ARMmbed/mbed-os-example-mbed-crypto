@@ -55,10 +55,12 @@
     !defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
 int main(void)
 {
-    mbedtls_printf("MBEDTLS_PSA_CRYPTO_C and/or MBEDTLS_AES_C and/or "
-                   "MBEDTLS_CIPHER_MODE_CBC and/or MBEDTLS_CIPHER_MODE_CTR "
-                   "and/or MBEDTLS_CIPHER_MODE_WITH_PADDING "
-                   "not defined.\r\n");
+    mbedtls_printf("Not all of the required options are defined:\r\n"
+                   "  - MBEDTLS_PSA_CRYPTO_C\r\n"
+                   "  - MBEDTLS_AES_C\r\n"
+                   "  - MBEDTLS_CIPHER_MODE_CBC\r\n"
+                   "  - MBEDTLS_CIPHER_MODE_CTR\r\n"
+                   "  - MBEDTLS_CIPHER_MODE_WITH_PADDING\r\n");
     return 0;
 }
 #else
