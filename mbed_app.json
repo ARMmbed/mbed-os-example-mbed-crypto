@@ -1,0 +1,8 @@
+{
+    "target_overrides": {
+        "*": {
+             "platform.stdio-convert-newlines": true
+        }
+    }
+}
+

@@ -1,0 +1,6 @@
+cipher encrypt/decrypt AES CBC no padding:
+	success!
+cipher encrypt/decrypt AES CBC PKCS7 multipart:
+	success!
+cipher encrypt/decrypt AES CTR multipart:
+	success!
