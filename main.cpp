@@ -19,6 +19,7 @@
 #endif
 
 #include "psa/crypto.h"
+#include "entropy.h"
 #include <string.h>
 #include <inttypes.h>
 
@@ -331,8 +332,38 @@ static void cipher_examples(void)
     }
 }
 
+static void fake_set_initial_nvseed(void)
+{
+    /* This function, fake_set_initial_nvseed(), is useless on platforms that
+     * have already been manufactured correctly. This function demonstrates
+     * what a factory tool may do in order to manufacture a device that does
+     * not have its own source of entropy. */
+
+    /* mbedtls_psa_inject_entropy() is always present, but calls to it will
+     * always fail unless the PSA Secure Processing Element (SPE) is configured
+     * with both MBEDTLS_ENTROPY_NV_SEED and MBEDTLS_PSA_HAS_ITS_IO by the
+     * SPE's Mbed TLS configuration system. */
+    uint8_t seed[MBEDTLS_ENTROPY_MAX_SEED_SIZE];
+
+    /* Calculate a fake seed for injecting. A real factory application would
+     * inject true entropy for use as the initial NV Seed. */
+    for (size_t i = 0; i < sizeof(seed); ++i) {
+        seed[i] = i;
+    }
+
+    int status = mbedtls_psa_inject_entropy(seed, sizeof(seed));
+    if (status) {
+        /* The device may already have an NV Seed injected, or another error
+         * may have happened during injection. */
+        mbedtls_printf("warning (%d) - this attempt at entropy injection"
+                       " failed\n", status);
+    }
+}
+
 int main(void)
 {
+    fake_set_initial_nvseed();
+
     ASSERT_STATUS(psa_crypto_init(), PSA_SUCCESS);
     cipher_examples();
 exit:
