@@ -21,7 +21,7 @@ For example, in order to compile using the ARM GCC compiler and a K64F target pl
 Once the compilation is completed successfully a binary file will be created: `./BUILD/K64F/GCC_ARM/mbed-os-example-mbed-crypto.bin`
 
 ## Program your board
-1. Connect your mbed device to the computer over USB.
+1. Connect your Mbed device to the computer over USB.
 1. Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
 
 ## Run
