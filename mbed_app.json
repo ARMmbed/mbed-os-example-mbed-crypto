@@ -4,6 +4,9 @@
              "platform.stdio-convert-newlines": true,
              "target.extra_labels_add": ["PSA"]
         }
-    }
+    },
+    "macros": [
+        "MBEDTLS_USER_CONFIG_FILE=\"mbedtls_user_config.h\""
+    ]
 }
 
