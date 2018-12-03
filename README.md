@@ -10,7 +10,7 @@ List of examples contained within this repository:
 * Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed CLI</a>
 
 ## Import
-The following are the steps required for install the application:
+The following are the steps required to install the application:
 * Clone the repository and deploy the Mbed OS project: `mbed import https://github.com/ARMmbed/mbed-os-example-mbed-crypto`
 * Change your current directory: `cd mbed-os-example-mbed-crypto`
 
@@ -22,15 +22,11 @@ Once the compilation is completed successfully a binary file will be created: `.
 
 ## Program your board
 1. Connect your mbed device to the computer over USB.
-1. Copy the binary file to the mbed device.
-1. Press the reset button to start the program.
+1. Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
 
 ## Run
-The following are the steps required to run the example program:
-* Connect the Mbed device to your computer over USB.
-* Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
-* Connect to the Mbed Device using a serial client application of your choice.
-* Press the reset button on the Mbed device to run the program.
+1. Connect to the Mbed Device using a serial client application of your choice.
+1. Press the reset button on the Mbed device to run the program.
 
 The expected output from a successful execution of the example program should be as follows:
 ```
