@@ -6,6 +6,33 @@ List of examples contained within this repository:
 * Cipher encrypt/decrypt using an AES key in cipher block chain (CBC) mode with PKCS7 padding using multiple blocks.
 * Cipher encrypt/decrypt using an AES key in counter (CTR) mode using multiple blocks.
 
+## Factory injection of entropy
+
+This example also contains a fake entropy injection example. Use of this
+function (`mbedtls_psa_inject_entropy()`) is demonstrated in this example, but
+it is not a function users would ever need to call as part of their
+applications. The function is useful for factory tool developers only.
+
+In a production system, and in the absence of other sources of entropy, a
+factory tool can inject entropy into the device. After the factory tool
+completes manufacturing of a device, that device must contain enough entropy
+for the lifetime of the device or be able to produce it with an on-board TRNG.
+
+A factory application wishing to inject entropy should configure Mbed Crypto
+using the Mbed TLS configuration system (for the PSA Secure Processing Element,
+SPE), such as in the factory application's SPE binary's `mbed_app.json` as
+follows:
+
+```javascript
+{
+    "macros": [
+        "MBEDTLS_ENTROPY_NV_SEED=1",
+        "MBEDTLS_PLATFORM_NV_SEED_READ_MACRO=mbed_default_seed_read",
+        "MBEDTLS_PLATFORM_NV_SEED_WRITE_MACRO=mbed_default_seed_write"
+    ]
+}
+```
+
 ## Prerequisites
 * Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed CLI</a>
 
