@@ -1,6 +1,5 @@
 # Running Mbed Crypto examples on Mbed OS
-This repository contains a set of examples demonstrating the compilation and use
-of Mbed Crypto on Mbed OS.
+This repository contains a set of examples demonstrating the compilation and use of Mbed Crypto on Mbed OS.
 
 List of examples contained within this repository:
 * Cipher encrypt/decrypt using an AES key in cipher block chain (CBC) mode with no padding using a single block.
@@ -10,11 +9,10 @@ List of examples contained within this repository:
 ## Prerequisites
 * Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed CLI</a>
 
-## Deploy
-The following are the steps required for deployment:
-* Clone this repository: `git clone git@github.com:ARMmbed/mbed-os-example-mbed-crypto.git`
+## Import
+The following are the steps required to install the application:
+* Clone the repository and deploy the Mbed OS project: `mbed import https://github.com/ARMmbed/mbed-os-example-mbed-crypto`
 * Change your current directory: `cd mbed-os-example-mbed-crypto`
-* Fetch Mbed OS: `mbed deploy`
 
 ## Compile
 To compile the example program use `mbed compile` while specifying the target platform and the compiler.
@@ -22,12 +20,13 @@ For example, in order to compile using the ARM GCC compiler and a K64F target pl
 
 Once the compilation is completed successfully a binary file will be created: `./BUILD/K64F/GCC_ARM/mbed-os-example-mbed-crypto.bin`
 
+## Program your board
+1. Connect your Mbed device to the computer over USB.
+1. Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
+
 ## Run
-The following are the steps required to run the example program:
-* Connect the Mbed device to your computer over USB.
-* Copy the binary file (`mbed-os-example-mbed-crypto.bin`) to the Mbed device.
-* Connect to the Mbed Device using a serial client application of your choice.
-* Press the reset button on the Mbed device to run the program.
+1. Connect to the Mbed Device using a serial client application of your choice.
+1. Press the reset button on the Mbed device to run the program.
 
 The expected output from a successful execution of the example program should be as follows:
 ```
@@ -38,3 +37,7 @@ cipher encrypt/decrypt AES CBC PKCS7 multipart:
 cipher encrypt/decrypt AES CTR multipart:
         success!
 ```
+
+## Troubleshooting
+If you have problems, you can review the [documentation](https://os.mbed.com/docs/latest/tutorials/debugging.html) for suggestions on what could be wrong and how to fix it.
+
