@@ -43,7 +43,7 @@ The following are the steps required to install the application:
 
 ## Compile
 To compile the example program use `mbed compile` while specifying the target platform and the compiler.
-For example, in order to compile using the ARM GCC compiler and a K64F target platform use: `mbed compile -m K64F -t ARM`.
+For example, in order to compile using the ARM GCC compiler and a K64F target platform use: `mbed compile -m K64F -t GCC_ARM`.
 
 Once the compilation is completed successfully a binary file will be created: `./BUILD/K64F/GCC_ARM/mbed-os-example-mbed-crypto.bin`
 
