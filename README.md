@@ -55,8 +55,20 @@ Once the compilation is completed successfully a binary file will be created: `.
 1. Connect to the Mbed Device using a serial client application of your choice.
 1. Press the reset button on the Mbed device to run the program.
 
-The expected output from a successful execution of the example program should be as follows:
+The expected output from the first successful execution of the example program should be as follows:
 ```
+cipher encrypt/decrypt AES CBC no padding:
+        success!
+cipher encrypt/decrypt AES CBC PKCS7 multipart:
+        success!
+cipher encrypt/decrypt AES CTR multipart:
+        success!
+```
+
+Any subsequent run where entropy is already present, or if entropy injection is
+not enabled, will result in the following acceptable output:
+```
+warning (-133) - this attempt at entropy injection failed
 cipher encrypt/decrypt AES CBC no padding:
         success!
 cipher encrypt/decrypt AES CBC PKCS7 multipart:
