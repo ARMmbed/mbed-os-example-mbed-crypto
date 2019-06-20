@@ -2,7 +2,6 @@
     "target_overrides": {
         "*": {
              "platform.stdio-convert-newlines": true,
-             "target.extra_labels_add": ["PSA"],
              "target.components_remove": ["SD"]
         }
     },

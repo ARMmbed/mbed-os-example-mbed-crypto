@@ -340,6 +340,7 @@ static void cipher_examples(void)
     }
 }
 
+#if defined(MBEDTLS_PSA_INJECT_ENTROPY)
 static void fake_set_initial_nvseed(void)
 {
     /* This function, fake_set_initial_nvseed(), is useless on platforms that
@@ -367,10 +368,13 @@ static void fake_set_initial_nvseed(void)
                        " failed\n", status);
     }
 }
+#endif
 
 int main(void)
 {
+#if defined(MBEDTLS_PSA_INJECT_ENTROPY)
     fake_set_initial_nvseed();
+#endif
 
     ASSERT_STATUS(psa_crypto_init(), PSA_SUCCESS);
     cipher_examples();
