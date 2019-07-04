@@ -65,8 +65,8 @@ cipher encrypt/decrypt AES CTR multipart:
         success!
 ```
 
-Any subsequent run where entropy is already present, or if entropy injection is
-not enabled, will result in the following acceptable output:
+Any subsequent run where entropy is already present will result in the
+following acceptable output:
 ```
 warning (-133) - this attempt at entropy injection failed
 cipher encrypt/decrypt AES CBC no padding:
