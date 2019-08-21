@@ -43,17 +43,11 @@
         }                                                                     \
     } while (0)
 
-#if !defined(MBEDTLS_PSA_CRYPTO_C) || !defined(MBEDTLS_AES_C) || \
-    !defined(MBEDTLS_CIPHER_MODE_CBC) || !defined(MBEDTLS_CIPHER_MODE_CTR) || \
-    !defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
+#if !defined(MBEDTLS_PSA_CRYPTO_C)
 int main(void)
 {
     mbedtls_printf("Not all of the required options are defined:\n"
                    "  - MBEDTLS_PSA_CRYPTO_C\n"
-                   "  - MBEDTLS_AES_C\n"
-                   "  - MBEDTLS_CIPHER_MODE_CBC\n"
-                   "  - MBEDTLS_CIPHER_MODE_CTR\n"
-                   "  - MBEDTLS_CIPHER_MODE_WITH_PADDING\n");
     return 0;
 }
 #else
@@ -365,5 +359,4 @@ exit:
     mbedtls_psa_crypto_free();
     return 0;
 }
-#endif /* MBEDTLS_PSA_CRYPTO_C && MBEDTLS_AES_C && MBEDTLS_CIPHER_MODE_CBC &&
-          MBEDTLS_CIPHER_MODE_CTR && MBEDTLS_CIPHER_MODE_WITH_PADDING */
+#endif /* MBEDTLS_PSA_CRYPTO_C */
