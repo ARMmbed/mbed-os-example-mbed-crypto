@@ -1,0 +1,15 @@
+-- Begin Mbed Crypto Getting Started --
+
+Import an AES key...	Imported a key
+Sign a message...	Signed a message
+Encrypt with cipher...	Encrypted plaintext
+Decrypt with cipher...	Decrypted ciphertext
+Hash a message...	Hashed a message
+Verify a hash...	Verified a hash
+Generate random...	Generated random data
+Derive a key (HKDF)...	Derived key
+Authenticate encrypt...	Authenticated and encrypted
+Authenticate decrypt...	Authenticated and decrypted
+Generate a key pair...	Exported a public key
+
+-- End Mbed Crypto Getting Started --
