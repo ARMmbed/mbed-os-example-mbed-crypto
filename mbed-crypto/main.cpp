@@ -20,6 +20,7 @@
 
 #include "psa/crypto.h"
 #include "entropy.h"
+#include "mbedtls/version.h"
 #include <string.h>
 #include <inttypes.h>
 
@@ -43,34 +44,15 @@
         }                                                                     \
     } while (0)
 
-#if !defined(MBEDTLS_PSA_CRYPTO_C) || !defined(MBEDTLS_AES_C) || \
-    !defined(MBEDTLS_CIPHER_MODE_CBC) || !defined(MBEDTLS_CIPHER_MODE_CTR) || \
-    !defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
+#if !defined(MBEDTLS_PSA_CRYPTO_C) || (MBEDTLS_VERSION_NUMBER < 0x02130000)
 int main(void)
 {
-    mbedtls_printf("Not all of the required options are defined:\n"
+    mbedtls_printf("Not all of the requirements are met:\n"
                    "  - MBEDTLS_PSA_CRYPTO_C\n"
-                   "  - MBEDTLS_AES_C\n"
-                   "  - MBEDTLS_CIPHER_MODE_CBC\n"
-                   "  - MBEDTLS_CIPHER_MODE_CTR\n"
-                   "  - MBEDTLS_CIPHER_MODE_WITH_PADDING\n");
+                   "  - PSA Crypto API v1.0b3\n");
     return 0;
 }
 #else
-
-static psa_status_t set_key_policy(psa_key_handle_t key_handle,
-                                   psa_key_usage_t key_usage,
-                                   psa_algorithm_t alg)
-{
-    psa_status_t status;
-    psa_key_policy_t policy = psa_key_policy_init();
-
-    psa_key_policy_set_usage(&policy, key_usage, alg);
-    status = psa_set_key_policy(key_handle, &policy);
-    ASSERT_STATUS(status, PSA_SUCCESS);
-exit:
-    return status;
-}
 
 static psa_status_t cipher_operation(psa_cipher_operation_t *operation,
                                      const uint8_t *input,
@@ -184,20 +166,19 @@ static psa_status_t cipher_example_encrypt_decrypt_aes_cbc_nopad_1_block(void)
     uint8_t encrypt[block_size];
     uint8_t decrypt[block_size];
     psa_key_handle_t key_handle = 0;
-
-    status = psa_allocate_key(&key_handle);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_key_attributes_t attributes = psa_key_attributes_init();
 
     status = psa_generate_random(input, sizeof(input));
     ASSERT_STATUS(status, PSA_SUCCESS);
 
-    status = set_key_policy(key_handle,
-                            PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT,
-                            alg);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_set_key_usage_flags(
+        &attributes, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+    psa_set_key_algorithm(&attributes, alg);
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
+    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_bits(&attributes, key_bits);
 
-    status = psa_generate_key(key_handle, PSA_KEY_TYPE_AES, key_bits,
-                              NULL, 0);
+    status = psa_generate_key(&attributes, &key_handle);
     ASSERT_STATUS(status, PSA_SUCCESS);
 
     status = cipher_encrypt(key_handle, alg, iv, sizeof(iv),
@@ -234,20 +215,19 @@ static psa_status_t cipher_example_encrypt_decrypt_aes_cbc_pkcs7_multi(void)
     uint8_t iv[block_size], input[input_size],
             encrypt[input_size + block_size], decrypt[input_size + block_size];
     psa_key_handle_t key_handle = 0;
-
-    status = psa_allocate_key(&key_handle);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_key_attributes_t attributes = psa_key_attributes_init();
 
     status = psa_generate_random(input, sizeof(input));
     ASSERT_STATUS(status, PSA_SUCCESS);
 
-    status = set_key_policy(key_handle,
-                            PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT,
-                            alg);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_set_key_usage_flags(
+        &attributes, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+    psa_set_key_algorithm(&attributes, alg);
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
+    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_bits(&attributes, key_bits);
 
-    status = psa_generate_key(key_handle, PSA_KEY_TYPE_AES, key_bits,
-                              NULL, 0);
+    status = psa_generate_key(&attributes, &key_handle);
     ASSERT_STATUS(status, PSA_SUCCESS);
 
     status = cipher_encrypt(key_handle, alg, iv, sizeof(iv),
@@ -283,20 +263,19 @@ static psa_status_t cipher_example_encrypt_decrypt_aes_ctr_multi(void)
     uint8_t iv[block_size], input[input_size], encrypt[input_size],
             decrypt[input_size];
     psa_key_handle_t key_handle = 0;
-
-    status = psa_allocate_key(&key_handle);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_key_attributes_t attributes = psa_key_attributes_init();
 
     status = psa_generate_random(input, sizeof(input));
     ASSERT_STATUS(status, PSA_SUCCESS);
 
-    status = set_key_policy(key_handle,
-                            PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT,
-                            alg);
-    ASSERT_STATUS(status, PSA_SUCCESS);
+    psa_set_key_usage_flags(
+        &attributes, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+    psa_set_key_algorithm(&attributes, alg);
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
+    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_bits(&attributes, key_bits);
 
-    status = psa_generate_key(key_handle, PSA_KEY_TYPE_AES, key_bits,
-                              NULL, 0);
+    status = psa_generate_key(&attributes, &key_handle);
     ASSERT_STATUS(status, PSA_SUCCESS);
 
     status = cipher_encrypt(key_handle, alg, iv, sizeof(iv),
@@ -382,5 +361,4 @@ exit:
     mbedtls_psa_crypto_free();
     return 0;
 }
-#endif /* MBEDTLS_PSA_CRYPTO_C && MBEDTLS_AES_C && MBEDTLS_CIPHER_MODE_CBC &&
-          MBEDTLS_CIPHER_MODE_CTR && MBEDTLS_CIPHER_MODE_WITH_PADDING */
+#endif /* MBEDTLS_PSA_CRYPTO_C */
