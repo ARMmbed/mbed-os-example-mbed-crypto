@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 #include "psa/crypto.h"
+#include "mbedtls/version.h"
 #include <string.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -87,11 +88,12 @@
 0xae, 0x59, 0xbb, 0xfe, 0x1c, 0x99, 0x77, 0x81, 0x44, 0x7a, 0x2b, 0x24, \
 }
 
-#if !defined(MBEDTLS_PSA_CRYPTO_C)
+#if !defined(MBEDTLS_PSA_CRYPTO_C) || (MBEDTLS_VERSION_NUMBER < 0x02130000)
 int main(void)
 {
-    printf("Not all of the required options are defined:\n"
+    printf("Not all of the requirements are met:\n"
            "  - MBEDTLS_PSA_CRYPTO_C\n"
+           "  - PSA Crypto API v1.0b3\n");
     return 0;
 }
 #else
