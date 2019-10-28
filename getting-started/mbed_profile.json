@@ -1,0 +1,15 @@
+{
+    "GCC_ARM": {},
+    "ARMC6": {
+        "common": ["-O1"]
+    },
+    "ARM": {
+        "common": ["-O1"]
+    },
+    "uARM": {
+        "common": ["-O1"]
+    },
+    "IAR": {
+        "common": ["-Ol"]
+    }
+}
