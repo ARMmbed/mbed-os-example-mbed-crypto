@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <mbed.h>
+#include <platform.h>
 #include "psa/crypto.h"
 #include "mbedtls/version.h"
 #include <string.h>
@@ -764,6 +766,13 @@ static void generate_and_export_a_public_key()
 int main(void)
 {
     printf("-- Begin Mbed Crypto Getting Started --\n\n");
+    
+    int ret = 0;
+
+    if((ret = mbedtls_platform_setup(NULL)) != 0) {
+        mbedtls_printf("Platform initialization failed with error %d\r\n", ret);
+        return 1;
+    }
 
     import_a_key(AES_KEY, sizeof(AES_KEY));
     sign_a_message_using_rsa(RSA_KEY, sizeof(RSA_KEY));
@@ -777,6 +786,7 @@ int main(void)
     authenticate_and_decrypt_a_message();
     generate_and_export_a_public_key();
 
+    mbedtls_platform_teardown(NULL);
     printf("\n-- End Mbed Crypto Getting Started --\n");
 
     return 0;
