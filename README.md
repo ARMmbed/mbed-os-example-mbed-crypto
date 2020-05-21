@@ -9,8 +9,9 @@ List of examples contained within this repository:
 
 ## Import
 The following are the steps required to install the application:
-* Clone the repository and deploy the Mbed OS project: `mbed import https://github.com/ARMmbed/mbed-os-example-mbed-crypto`
-* Change your current directory: `cd mbed-os-example-mbed-crypto/getting-started`
+1. Clone the repository: `git clone https://github.com/ARMmbed/mbed-os-example-mbed-crypto.git`
+1. Navigate to the "getting-started" example: `cd mbed-os-example-mbed-crypto/getting-started`
+1. Deploy the Mbed OS project: `mbed deploy`
 
 ## Compile
 To compile the example program use `mbed compile` while specifying the target platform and the compiler.
