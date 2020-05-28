@@ -2,6 +2,7 @@
     "target_overrides": {
         "*": {
              "platform.stdio-convert-newlines": true,
+             "target.features_add" : ["EXPERIMENTAL_API"],
              "target.components_remove": ["SD"]
         }
     },
