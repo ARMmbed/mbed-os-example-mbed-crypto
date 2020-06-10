@@ -1,3 +1,4 @@
+![](./resources/official_armmbed_example_badge.png)
 # Running Mbed Crypto examples on Mbed OS
 This repository contains a set of examples demonstrating the compilation and use of Mbed Crypto on Mbed OS.
 
