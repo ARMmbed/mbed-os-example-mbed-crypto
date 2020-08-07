@@ -1,42 +1,39 @@
+# Copyright (c) 2020 ARM Limited. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-# Mbed OS system root path - that probably needs to come from tools
-# TODO: @mbed-os-tools
-set(MBED_OS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
+# TODO: @mbed-os-tools MBED_ROOT and MBED_CONFIG_PATH should probably come from mbedtools
+set(MBED_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
+set(MBED_CONFIG_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.mbedbuild CACHE INTERNAL "")
+set(APP_TARGET getting-started)
 
-# TODO: @mbed-os-tools This needs to come from tools
-# Build system provides "target" list. This property is defined in mbed_app.json
-# to used the PSA source code under features/FEATURE_EXPERIMENTAL_API.
-# Note: This must be placed before subdirectories
-# DISCO_L475VG_IOT01A
-set_property(GLOBAL
-  PROPERTY MBED_OS_TARGET_LABELS
-    EXPERIMENTAL_API;
-)
+add_subdirectory(${MBED_ROOT})
 
-# TODO: @mbed-os-tools This needs to come from tools
-# It was added by the application in mbed_app.json
-add_definitions(
-    -DMBEDTLS_USER_CONFIG_FILE="mbedtls_user_config.h"
-)
+add_executable(${APP_TARGET})
 
-# Include standard Mbed definitions
-include(${MBED_OS_ROOT}/cmake/app.cmake)
+mbed_configure_app_target(${APP_TARGET})
 
-project(getting-started)
+mbed_set_mbed_target_linker_script(${APP_TARGET})
 
-# uncomment below to have a verbose build process
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+project(${APP_TARGET})
 
-# Sources for main application
-target_sources(app
-    PRIVATE
-        main.cpp
-)
-
+# Provide Mbed OS with the header file it needs to configure Mbed TLS
 target_include_directories(mbed-os
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+target_sources(${APP_TARGET}
+    PRIVATE
+        main.cpp
+)
+
+target_link_libraries(${APP_TARGET} mbed-os)
+
+mbed_generate_bin_hex(${APP_TARGET})
+
+option(VERBOSE_BUILD "Have a verbose build process")
+if(VERBOSE_BUILD)
+    set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
