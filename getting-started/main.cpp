@@ -123,7 +123,7 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     /* Import the key */
     status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import key\n");
+        printf("Failed to import key (%" PRIu32 ")\n", status);
         return;
     }
     printf("Imported a key\n");
@@ -162,7 +162,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
     /* Import the key */
     status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import key\n");
+        printf("Failed to import key (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -172,7 +172,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
                            signature, sizeof(signature),
                            &signature_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to sign\n");
+        printf("Failed to sign (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -211,7 +211,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_set_key_bits(&attributes, 128);
     status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -219,24 +219,24 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     /* Encrypt the plaintext */
     status = psa_cipher_encrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin cipher operation\n");
+        printf("Failed to begin cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_generate_iv(&operation, iv, sizeof(iv), &iv_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate IV\n");
+        printf("Failed to generate IV (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_update(&operation, plaintext, sizeof(plaintext),
                                output, sizeof(output), &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to update cipher operation\n");
+        printf("Failed to update cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_finish(&operation, output + output_len,
                                sizeof(output) - output_len, &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish cipher operation\n");
+        printf("Failed to finish cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     printf("Encrypted plaintext\n");
@@ -273,7 +273,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_set_key_bits(&attributes, 128);
     status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -281,24 +281,24 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     /* Decrypt the ciphertext */
     status = psa_cipher_decrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin cipher operation\n");
+        printf("Failed to begin cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_set_iv(&operation, iv, sizeof(iv));
     if (status != PSA_SUCCESS) {
-        printf("Failed to set IV\n");
+        printf("Failed to set IV (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_update(&operation, ciphertext, sizeof(ciphertext),
                                output, sizeof(output), &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to update cipher operation\n");
+        printf("Failed to update cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_finish(&operation, output + output_len,
                                sizeof(output) - output_len, &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish cipher operation\n");
+        printf("Failed to finish cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     printf("Decrypted ciphertext\n");
@@ -325,18 +325,18 @@ static void hash_a_message(void)
     /* Compute hash of message  */
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin hash operation\n");
+        printf("Failed to begin hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_update(&operation, input, sizeof(input));
     if (status != PSA_SUCCESS) {
-        printf("Failed to update hash operation\n");
+        printf("Failed to update hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_finish(&operation, actual_hash, sizeof(actual_hash),
                              &actual_hash_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish hash operation\n");
+        printf("Failed to finish hash operation (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -365,17 +365,17 @@ static void verify_a_hash(void)
     /* Verify message hash */
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin hash operation\n");
+        printf("Failed to begin hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_update(&operation, input, sizeof(input));
     if (status != PSA_SUCCESS) {
-        printf("Failed to update hash operation\n");
+        printf("Failed to update hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_verify(&operation, expected_hash, expected_hash_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to verify hash\n");
+        printf("Failed to verify hash (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -395,7 +395,7 @@ static void generate_a_random_value(void)
 
     status = psa_generate_random(random, sizeof(random));
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate a random value\n");
+        printf("Failed to generate a random value (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -435,7 +435,7 @@ static void derive_a_new_key_from_an_existing_key(void)
     psa_set_key_type(&attributes, PSA_KEY_TYPE_DERIVE);
     status = psa_import_key(&attributes, key, sizeof(key), &base_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -443,33 +443,33 @@ static void derive_a_new_key_from_an_existing_key(void)
     /* Derive a key */
     status = psa_key_derivation_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin key derivation\n");
+        printf("Failed to begin key derivation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_set_capacity(&operation, capacity);
     if (status != PSA_SUCCESS) {
-        printf("Failed to set capacity\n");
+        printf("Failed to set capacity (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_bytes(&operation,
                                             PSA_KEY_DERIVATION_INPUT_SALT,
                                             salt, sizeof(salt));
     if (status != PSA_SUCCESS) {
-        printf("Failed to input salt (extract)\n");
+        printf("Failed to input salt (extract) (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_key(&operation,
                                           PSA_KEY_DERIVATION_INPUT_SECRET,
                                           base_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to input key (extract)\n");
+        printf("Failed to input key (extract) (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_bytes(&operation,
                                             PSA_KEY_DERIVATION_INPUT_INFO,
                                             info, sizeof(info));
     if (status != PSA_SUCCESS) {
-        printf("Failed to input info (expand)\n");
+        printf("Failed to input info (expand) (%" PRIu32 ")\n", status);
         return;
     }
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_ENCRYPT);
@@ -479,7 +479,7 @@ static void derive_a_new_key_from_an_existing_key(void)
     status = psa_key_derivation_output_key(&attributes, &operation,
                                            &derived_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to derive key\n");
+        printf("Failed to derive key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -543,7 +543,7 @@ static void authenticate_and_encrypt_a_message(void)
                               output_data, output_size,
                               &output_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to authenticate and encrypt\n");
+        printf("Failed to authenticate and encrypt (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -595,7 +595,7 @@ static void authenticate_and_decrypt_a_message(void)
     psa_set_key_bits(&attributes, 128);
     status = psa_import_key(&attributes, key, sizeof(key), &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -608,7 +608,7 @@ static void authenticate_and_decrypt_a_message(void)
                               output_data, output_size,
                               &output_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to authenticate and decrypt\n");
+        printf("Failed to authenticate and decrypt (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -644,7 +644,7 @@ static void generate_and_export_a_public_key()
     psa_set_key_bits(&attributes, key_bits);
     status = psa_generate_key(&attributes, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate key\n");
+        printf("Failed to generate key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -652,7 +652,7 @@ static void generate_and_export_a_public_key()
     status = psa_export_public_key(id, exported, sizeof(exported),
                                    &exported_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to export public key %ld\n", status);
+        printf("Failed to export public key (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -669,7 +669,7 @@ int main(void)
     /* Initialize PSA Crypto */
     psa_status_t status = psa_crypto_init();
     if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
+        printf("Failed to initialize PSA Crypto (%" PRIu32 ")\n", status);
         return -1;
     }
 
