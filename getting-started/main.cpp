@@ -109,7 +109,7 @@ static void import_a_key(const uint8_t *key, size_t key_len)
 {
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Import an AES key...\t");
     fflush(stdout);
@@ -121,7 +121,7 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     psa_set_key_bits(&attributes, 128);
 
     /* Import the key */
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to import key\n");
         return;
@@ -132,7 +132,7 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
@@ -146,31 +146,31 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
         0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
     };
-    uint8_t signature[PSA_ASYMMETRIC_SIGNATURE_MAX_SIZE] = {0};
+    uint8_t signature[PSA_SIGNATURE_MAX_SIZE] = {0};
     size_t signature_length;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Sign a message...\t");
     fflush(stdout);
 
     /* Set key attributes */
-    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
     psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_RSA_KEY_PAIR);
     psa_set_key_bits(&attributes, 1024);
 
     /* Import the key */
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to import key\n");
         return;
     }
 
     /* Sign message using the key */
-    status = psa_asymmetric_sign(handle, alg,
-                                 hash, sizeof(hash),
-                                 signature, sizeof(signature),
-                                 &signature_length);
+    status = psa_sign_hash(id, alg,
+                           hash, sizeof(hash),
+                           signature, sizeof(signature),
+                           &signature_length);
     if (status != PSA_SUCCESS) {
         printf("Failed to sign\n");
         return;
@@ -182,7 +182,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -198,7 +198,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     size_t iv_len;
     uint8_t output[block_size];
     size_t output_len;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
     psa_cipher_operation_t operation = PSA_CIPHER_OPERATION_INIT;
 
     printf("Encrypt with cipher...\t");
@@ -209,7 +209,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to import a key\n");
         return;
@@ -217,7 +217,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Encrypt the plaintext */
-    status = psa_cipher_encrypt_setup(&operation, handle, alg);
+    status = psa_cipher_encrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
         printf("Failed to begin cipher operation\n");
         return;
@@ -245,7 +245,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_cipher_abort(&operation);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -261,7 +261,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     uint8_t iv[block_size] = ENCRYPTED_WITH_IV;
     uint8_t output[block_size];
     size_t output_len;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Decrypt with cipher...\t");
     fflush(stdout);
@@ -271,7 +271,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to import a key\n");
         return;
@@ -279,7 +279,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Decrypt the ciphertext */
-    status = psa_cipher_decrypt_setup(&operation, handle, alg);
+    status = psa_cipher_decrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
         printf("Failed to begin cipher operation\n");
         return;
@@ -307,7 +307,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_cipher_abort(&operation);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void hash_a_message(void)
@@ -422,8 +422,8 @@ static void derive_a_new_key_from_an_existing_key(void)
         PSA_KEY_DERIVATION_OPERATION_INIT;
     size_t derived_bits = 128;
     size_t capacity = PSA_BITS_TO_BYTES(derived_bits);
-    psa_key_handle_t base_key;
-    psa_key_handle_t derived_key;
+    psa_key_id_t base_key;
+    psa_key_id_t derived_key;
 
     printf("Derive a key (HKDF)...\t");
     fflush(stdout);
@@ -515,7 +515,7 @@ static void authenticate_and_encrypt_a_message(void)
     size_t output_length = 0;
     size_t tag_length = 16;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Authenticate encrypt...\t");
     fflush(stdout);
@@ -532,11 +532,11 @@ static void authenticate_and_encrypt_a_message(void)
     psa_set_key_algorithm(&attributes, PSA_ALG_CCM);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, sizeof(key), &handle);
+    status = psa_import_key(&attributes, key, sizeof(key), &id);
     psa_reset_key_attributes(&attributes);
 
     /* Authenticate and encrypt */
-    status = psa_aead_encrypt(handle, PSA_ALG_CCM,
+    status = psa_aead_encrypt(id, PSA_ALG_CCM,
                               nonce, sizeof(nonce),
                               additional_data, sizeof(additional_data),
                               input_data, sizeof(input_data),
@@ -553,7 +553,7 @@ static void authenticate_and_encrypt_a_message(void)
     free(output_data);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void authenticate_and_decrypt_a_message(void)
@@ -576,7 +576,7 @@ static void authenticate_and_decrypt_a_message(void)
     size_t output_size = 0;
     size_t output_length = 0;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Authenticate decrypt...\t");
     fflush(stdout);
@@ -593,7 +593,7 @@ static void authenticate_and_decrypt_a_message(void)
     psa_set_key_algorithm(&attributes, PSA_ALG_CCM);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, sizeof(key), &handle);
+    status = psa_import_key(&attributes, key, sizeof(key), &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to import a key\n");
         return;
@@ -601,7 +601,7 @@ static void authenticate_and_decrypt_a_message(void)
     psa_reset_key_attributes(&attributes);
 
     /* Authenticate and decrypt */
-    status = psa_aead_decrypt(handle, PSA_ALG_CCM,
+    status = psa_aead_decrypt(id, PSA_ALG_CCM,
                               nonce, sizeof(nonce),
                               additional_data, sizeof(additional_data),
                               input_data, sizeof(input_data),
@@ -618,7 +618,7 @@ static void authenticate_and_decrypt_a_message(void)
     free(output_data);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 static void generate_and_export_a_public_key()
@@ -630,26 +630,26 @@ static void generate_and_export_a_public_key()
     size_t exported_length = 0;
     static uint8_t exported[PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(key_bits)];
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Generate a key pair...\t");
     fflush(stdout);
 
     /* Generate a key */
-    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
     psa_set_key_algorithm(&attributes,
                           PSA_ALG_DETERMINISTIC_ECDSA(PSA_ALG_SHA_256));
     psa_set_key_type(&attributes,
-                     PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_CURVE_SECP256R1));
+                     PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, key_bits);
-    status = psa_generate_key(&attributes, &handle);
+    status = psa_generate_key(&attributes, &id);
     if (status != PSA_SUCCESS) {
         printf("Failed to generate key\n");
         return;
     }
     psa_reset_key_attributes(&attributes);
 
-    status = psa_export_public_key(handle, exported, sizeof(exported),
+    status = psa_export_public_key(id, exported, sizeof(exported),
                                    &exported_length);
     if (status != PSA_SUCCESS) {
         printf("Failed to export public key %ld\n", status);
@@ -659,7 +659,7 @@ static void generate_and_export_a_public_key()
     printf("Exported a public key\n");
 
     /* Destroy the key */
-    psa_destroy_key(handle);
+    psa_destroy_key(id);
 }
 
 int main(void)
