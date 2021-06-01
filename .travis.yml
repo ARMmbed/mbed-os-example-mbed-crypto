@@ -80,9 +80,9 @@ matrix:
         - pip install "intelhex>=1.3,<=2.2.1"
       script:
         - cd getting-started
-        - mbedtools checkout
-        - echo mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
-        - mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
+        - mbedtools deploy
+        - echo mbedtools compile -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
+        - mbedtools compile -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
         - ccache -s
         - cd ..
 
