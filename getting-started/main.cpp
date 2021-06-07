@@ -114,13 +114,6 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     printf("Import an AES key...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     /* Set key attributes */
     psa_set_key_usage_flags(&attributes, 0);
     psa_set_key_algorithm(&attributes, 0);
@@ -140,8 +133,6 @@ static void import_a_key(const uint8_t *key, size_t key_len)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
@@ -155,13 +146,6 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 
     printf("Sign a message...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Set key attributes */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
@@ -193,8 +177,6 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -215,14 +197,6 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 
     printf("Encrypt with cipher...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS)
-    {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_ENCRYPT);
@@ -266,8 +240,6 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -287,14 +259,6 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 
     printf("Decrypt with cipher...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS)
-    {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DECRYPT);
@@ -338,8 +302,6 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void hash_a_message(void)
@@ -353,13 +315,6 @@ static void hash_a_message(void)
 
     printf("Hash a message...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Compute hash of message  */
     status = psa_hash_setup(&operation, alg);
@@ -383,8 +338,6 @@ static void hash_a_message(void)
 
     /* Clean up hash operation context */
     psa_hash_abort(&operation);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void verify_a_hash(void)
@@ -402,13 +355,6 @@ static void verify_a_hash(void)
 
     printf("Verify a hash...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Verify message hash */
     status = psa_hash_setup(&operation, alg);
@@ -431,8 +377,6 @@ static void verify_a_hash(void)
 
     /* Clean up hash operation context */
     psa_hash_abort(&operation);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void generate_a_random_value(void)
@@ -443,13 +387,6 @@ static void generate_a_random_value(void)
     printf("Generate random...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     status = psa_generate_random(random, sizeof(random));
     if (status != PSA_SUCCESS) {
         printf("Failed to generate a random value\n");
@@ -457,9 +394,6 @@ static void generate_a_random_value(void)
     }
 
     printf("Generated random data\n");
-
-    /* Clean up */
-    mbedtls_psa_crypto_free();
 }
 
 static void derive_a_new_key_from_an_existing_key(void)
@@ -487,13 +421,6 @@ static void derive_a_new_key_from_an_existing_key(void)
 
     printf("Derive a key (HKDF)...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key for use in key derivation. If such a key has already been
      * generated or imported, you can skip this part. */
@@ -559,8 +486,6 @@ static void derive_a_new_key_from_an_existing_key(void)
     /* Destroy the keys */
     psa_destroy_key(derived_key);
     psa_destroy_key(base_key);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void authenticate_and_encrypt_a_message(void)
@@ -588,13 +513,6 @@ static void authenticate_and_encrypt_a_message(void)
 
     printf("Authenticate encrypt...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     output_size = sizeof(input_data) + tag_length;
     output_data = (uint8_t *)malloc(output_size);
@@ -630,8 +548,6 @@ static void authenticate_and_encrypt_a_message(void)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void authenticate_and_decrypt_a_message(void)
@@ -658,13 +574,6 @@ static void authenticate_and_decrypt_a_message(void)
 
     printf("Authenticate decrypt...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     output_size = sizeof(input_data);
     output_data = (uint8_t *)malloc(output_size);
@@ -704,8 +613,6 @@ static void authenticate_and_decrypt_a_message(void)
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void generate_and_export_a_public_key()
@@ -721,13 +628,6 @@ static void generate_and_export_a_public_key()
 
     printf("Generate a key pair...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Generate a key */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
@@ -754,13 +654,18 @@ static void generate_and_export_a_public_key()
 
     /* Destroy the key */
     psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
 }
 
 int main(void)
 {
     printf("-- Begin PSA Crypto Getting Started --\n\n");
+
+    /* Initialize PSA Crypto */
+    psa_status_t status = psa_crypto_init();
+    if (status != PSA_SUCCESS) {
+        printf("Failed to initialize PSA Crypto\n");
+        return -1;
+    }
 
     import_a_key(AES_KEY, sizeof(AES_KEY));
     sign_a_message_using_rsa(RSA_KEY, sizeof(RSA_KEY));
