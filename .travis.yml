@@ -84,3 +84,15 @@ matrix:
     - <<: *cmake-build-test
       name: "CMake PSA Crypto example - debug (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=debug CACHE_NAME=debug-K64F
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - develop (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=develop CACHE_NAME=develop-ARM_MUSCA_S1
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - release (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=release CACHE_NAME=release-ARM_MUSCA_S1
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - debug (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=debug CACHE_NAME=debug-ARM_MUSCA_S1
