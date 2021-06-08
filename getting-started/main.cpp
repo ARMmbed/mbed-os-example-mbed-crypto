@@ -139,7 +139,13 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 {
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    static const uint8_t hash[] = "INPUT_FOR_SIGN";
+    psa_algorithm_t alg = PSA_ALG_RSA_PKCS1V15_SIGN(PSA_ALG_SHA_256);
+    // SHA-256 of {'a', 'b', 'c'}
+    static const uint8_t hash[PSA_HASH_SIZE(PSA_ALG_SHA_256)] = {
+        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
+        0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
+    };
     uint8_t signature[PSA_ASYMMETRIC_SIGNATURE_MAX_SIZE] = {0};
     size_t signature_length;
     psa_key_handle_t handle;
@@ -149,7 +155,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 
     /* Set key attributes */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
-    psa_set_key_algorithm(&attributes, PSA_ALG_RSA_PKCS1V15_SIGN_RAW);
+    psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_RSA_KEY_PAIR);
     psa_set_key_bits(&attributes, 1024);
 
@@ -161,7 +167,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
     }
 
     /* Sign message using the key */
-    status = psa_asymmetric_sign(handle, PSA_ALG_RSA_PKCS1V15_SIGN_RAW,
+    status = psa_asymmetric_sign(handle, alg,
                                  hash, sizeof(hash),
                                  signature, sizeof(signature),
                                  &signature_length);
