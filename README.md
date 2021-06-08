@@ -1,5 +1,5 @@
 ![](./resources/official_armmbed_example_badge.png)
-# Running Mbed Crypto examples on Mbed OS
+# Running PSA Crypto examples on Mbed OS
 This repository contains an example demonstrating the compilation and use of PSA Crypto on Mbed OS.
 
 ## Prerequisites
@@ -42,7 +42,7 @@ Your PC may take a few minutes to compile your code.
 
 ## Expected output
 ```
--- Begin Mbed Crypto Getting Started --
+-- Begin PSA Crypto Getting Started --
 
 Import an AES key...    Imported a key
 Sign a message...       Signed a message
@@ -56,7 +56,7 @@ Authenticate encrypt... Authenticated and encrypted
 Authenticate decrypt... Authenticated and decrypted
 Generate a key pair...  Exported a public key
 
--- End Mbed Crypto Getting Started --
+-- End PSA Crypto Getting Started --
 ```
 
 ## Troubleshooting

@@ -45,7 +45,7 @@ matrix:
 
     - &cmake-build-test
       stage: "CMake"
-      name: "CMake Mbed Crypto example - develop (K64F)"
+      name: "CMake PSA Crypto example - develop (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=develop  CACHE_NAME=develop-K64F
       language: python
       python: 3.8
@@ -87,9 +87,9 @@ matrix:
         - cd ..
 
     - <<: *cmake-build-test
-      name: "CMake Mbed Crypto example - release (K64F)"
+      name: "CMake PSA Crypto example - release (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=release CACHE_NAME=release-K64F
 
     - <<: *cmake-build-test
-      name: "CMake Mbed Crypto example - debug (K64F)"
+      name: "CMake PSA Crypto example - debug (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=debug CACHE_NAME=debug-K64F

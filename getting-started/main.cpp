@@ -763,7 +763,7 @@ static void generate_and_export_a_public_key()
 
 int main(void)
 {
-    printf("-- Begin Mbed Crypto Getting Started --\n\n");
+    printf("-- Begin PSA Crypto Getting Started --\n\n");
 
     import_a_key(AES_KEY, sizeof(AES_KEY));
     sign_a_message_using_rsa(RSA_KEY, sizeof(RSA_KEY));
@@ -777,7 +777,7 @@ int main(void)
     authenticate_and_decrypt_a_message();
     generate_and_export_a_public_key();
 
-    printf("\n-- End Mbed Crypto Getting Started --\n");
+    printf("\n-- End PSA Crypto Getting Started --\n");
 
     return 0;
 }
