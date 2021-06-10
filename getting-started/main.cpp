@@ -139,7 +139,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 {
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    uint8_t hash[] = "INPUT_FOR_SIGN";
+    static const uint8_t hash[] = "INPUT_FOR_SIGN";
     uint8_t signature[PSA_ASYMMETRIC_SIGNATURE_MAX_SIZE] = {0};
     size_t signature_length;
     psa_key_handle_t handle;
@@ -187,7 +187,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
-    uint8_t plaintext[block_size] = SOME_PLAINTEXT;
+    static const uint8_t plaintext[block_size] = SOME_PLAINTEXT;
     uint8_t iv[block_size];
     size_t iv_len;
     uint8_t output[block_size];
@@ -251,7 +251,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
     psa_cipher_operation_t operation = PSA_CIPHER_OPERATION_INIT;
-    uint8_t ciphertext[block_size] = SOME_CIPHERTEXT;
+    static const uint8_t ciphertext[block_size] = SOME_CIPHERTEXT;
     uint8_t iv[block_size] = ENCRYPTED_WITH_IV;
     uint8_t output[block_size];
     size_t output_len;
@@ -309,7 +309,7 @@ static void hash_a_message(void)
     psa_status_t status;
     psa_algorithm_t alg = PSA_ALG_SHA_256;
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    unsigned char input[] = { 'a', 'b', 'c' };
+    static const unsigned char input[] = { 'a', 'b', 'c' };
     unsigned char actual_hash[PSA_HASH_MAX_SIZE];
     size_t actual_hash_len;
 
@@ -345,8 +345,8 @@ static void verify_a_hash(void)
     psa_status_t status;
     psa_algorithm_t alg = PSA_ALG_SHA_256;
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    unsigned char input[] = { 'a', 'b', 'c' };
-    unsigned char expected_hash[] = {
+    static const unsigned char input[] = { 'a', 'b', 'c' };
+    static const unsigned char expected_hash[] = {
         0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
         0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
