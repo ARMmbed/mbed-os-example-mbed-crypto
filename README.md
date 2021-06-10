@@ -1,36 +1,48 @@
 ![](./resources/official_armmbed_example_badge.png)
-# Running Mbed Crypto examples on Mbed OS
-This repository contains a set of examples demonstrating the compilation and use of Mbed Crypto on Mbed OS.
-
-List of examples contained within this repository:
-* Example code snippets for using the library, with [documentation](https://github.com/ARMmbed/mbed-crypto/blob/development/docs/getting_started.md).
+# Running PSA Crypto examples on Mbed OS
+This repository contains an example demonstrating the compilation and use of PSA Crypto on Mbed OS.
 
 ## Prerequisites
-* Install <a href='https://github.com/ARMmbed/mbed-cli#installing-mbed-cli'>Mbed CLI</a>
+This example requires the PSA Crypto API:
+* On TF-M targets, this API is provided by TF-M and always enabled.
+* On other targets, Mbed OS PSA can be enabled by adding `target.extra_labels_add": ["MBED_PSA_SRV"]`
+to `target_overrides` in [`getting-started/mbed_app.json`](./getting-started/mbed_app.json). Note that
+this cannot coexist with TF-M.
 
-## Import
-The following are the steps required to install the application:
-1. Clone the repository: `git clone https://github.com/ARMmbed/mbed-os-example-mbed-crypto.git`
-1. Navigate to the "getting-started" example: `cd mbed-os-example-mbed-crypto/getting-started`
-1. Deploy the Mbed OS project: `mbed deploy`
+## Mbed OS build tools
 
-## Compile
-To compile the example program use `mbed compile` while specifying the target platform and the compiler.
-For example, in order to compile using the ARM GCC compiler and a K64F target platform use: `mbed compile -m K64F -t GCC_ARM`.
+### Mbed CLI 2
+Starting with version 6.5, Mbed OS uses Mbed CLI 2. It uses Ninja as a build system, and CMake to generate the build environment and manage the build process in a compiler-independent manner. If you are working with Mbed OS version prior to 6.5 then check the section [Mbed CLI 1](#mbed-cli-1).
+1. [Install Mbed CLI 2](https://os.mbed.com/docs/mbed-os/latest/build-tools/install-or-upgrade.html).
+1. From the command-line, import the example: `mbed-tools import mbed-os-example-mbed-crypto`
 
-Once the compilation is completed successfully a binary file will be created: `./BUILD/K64F/GCC_ARM/getting-started.bin`
+### Mbed CLI 1
+1. [Install Mbed CLI 1](https://os.mbed.com/docs/mbed-os/latest/quick-start/offline-with-mbed-cli.html).
+1. From the command-line, import the example: `mbed import mbed-os-example-mbed-crypto`
 
-## Program your board
-1. Connect your Mbed device to the computer over USB.
-1. Copy the binary file (`getting-started.bin`) to the Mbed device.
+## Building and running
 
-## Run
-1. Connect to the Mbed Device using a serial client application of your choice.
-1. Press the reset button on the Mbed device to run the program.
+1. Change the current directory to `mbed-os-example-mbed-crypto/getting-started`.
+1. Connect a USB cable between the USB port on the board and the host computer.
+1. Run the following command to build the example project, program the microcontroller flash memory and open a serial monitor:
 
-The expected output from the first successful execution of the example program should be as follows:
+    * Mbed CLI 2
+
+    ```bash
+    $ mbed-tools compile -m <TARGET> -t <TOOLCHAIN> --flash --sterm
+    ```
+
+    * Mbed CLI 1
+
+    ```bash
+    $ mbed compile -m <TARGET> -t <TOOLCHAIN> --flash --sterm
+    ```
+
+Your PC may take a few minutes to compile your code.
+
+## Expected output
 ```
--- Begin Mbed Crypto Getting Started --
+-- Begin PSA Crypto Getting Started --
 
 Import an AES key...    Imported a key
 Sign a message...       Signed a message
@@ -44,7 +56,7 @@ Authenticate encrypt... Authenticated and encrypted
 Authenticate decrypt... Authenticated and decrypted
 Generate a key pair...  Exported a public key
 
--- End Mbed Crypto Getting Started --
+-- End PSA Crypto Getting Started --
 ```
 
 ## Troubleshooting

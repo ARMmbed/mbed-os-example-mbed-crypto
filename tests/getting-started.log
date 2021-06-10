@@ -1,4 +1,4 @@
--- Begin Mbed Crypto Getting Started --
+-- Begin PSA Crypto Getting Started --
 
 Import an AES key...	Imported a key
 Sign a message...	Signed a message
@@ -12,4 +12,4 @@ Authenticate encrypt...	Authenticated and encrypted
 Authenticate decrypt...	Authenticated and decrypted
 Generate a key pair...	Exported a public key
 
--- End Mbed Crypto Getting Started --
+-- End PSA Crypto Getting Started --
