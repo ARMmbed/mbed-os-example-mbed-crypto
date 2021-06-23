@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 #include "psa/crypto.h"
-#include "mbedtls/version.h"
 #include <string.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -98,12 +97,10 @@ static const uint8_t RSA_KEY[] =
     0xbb, 0xfe, 0x1c, 0x99, 0x77, 0x81, 0x44, 0x7a, 0x2b, 0x24,
 };
 
-#if !defined(MBEDTLS_PSA_CRYPTO_C) || (MBEDTLS_VERSION_NUMBER < 0x02130000)
+#if (PSA_CRYPTO_API_VERSION_MAJOR != 1)
 int main(void)
 {
-    printf("Not all of the requirements are met:\n"
-           "  - MBEDTLS_PSA_CRYPTO_C\n"
-           "  - PSA Crypto API v1.0b3\n");
+    printf("Requirement not met: PSA_CRYPTO_API_VERSION_MAJOR == 1\n");
     return 0;
 }
 #else
@@ -112,17 +109,10 @@ static void import_a_key(const uint8_t *key, size_t key_len)
 {
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Import an AES key...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Set key attributes */
     psa_set_key_usage_flags(&attributes, 0);
@@ -131,9 +121,9 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     psa_set_key_bits(&attributes, 128);
 
     /* Import the key */
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import key\n");
+        printf("Failed to import key (%" PRIu32 ")\n", status);
         return;
     }
     printf("Imported a key\n");
@@ -142,50 +132,47 @@ static void import_a_key(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 {
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    uint8_t hash[] = "INPUT_FOR_SIGN";
-    uint8_t signature[PSA_ASYMMETRIC_SIGNATURE_MAX_SIZE] = {0};
+    psa_algorithm_t alg = PSA_ALG_RSA_PKCS1V15_SIGN(PSA_ALG_SHA_256);
+    // SHA-256 of {'a', 'b', 'c'}
+    static const uint8_t hash[PSA_HASH_SIZE(PSA_ALG_SHA_256)] = {
+        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
+        0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
+    };
+    uint8_t signature[PSA_SIGNATURE_MAX_SIZE] = {0};
     size_t signature_length;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Sign a message...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     /* Set key attributes */
-    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
-    psa_set_key_algorithm(&attributes, PSA_ALG_RSA_PKCS1V15_SIGN_RAW);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+    psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_RSA_KEY_PAIR);
     psa_set_key_bits(&attributes, 1024);
 
     /* Import the key */
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import key\n");
+        printf("Failed to import key (%" PRIu32 ")\n", status);
         return;
     }
 
     /* Sign message using the key */
-    status = psa_asymmetric_sign(handle, PSA_ALG_RSA_PKCS1V15_SIGN_RAW,
-                                 hash, sizeof(hash),
-                                 signature, sizeof(signature),
-                                 &signature_length);
+    status = psa_sign_hash(id, alg,
+                           hash, sizeof(hash),
+                           signature, sizeof(signature),
+                           &signature_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to sign\n");
+        printf("Failed to sign (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -195,9 +182,7 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
     psa_reset_key_attributes(&attributes);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -208,58 +193,50 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
-    uint8_t plaintext[block_size] = SOME_PLAINTEXT;
+    static const uint8_t plaintext[block_size] = SOME_PLAINTEXT;
     uint8_t iv[block_size];
     size_t iv_len;
     uint8_t output[block_size];
     size_t output_len;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
     psa_cipher_operation_t operation = PSA_CIPHER_OPERATION_INIT;
 
     printf("Encrypt with cipher...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS)
-    {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_ENCRYPT);
     psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
 
     /* Encrypt the plaintext */
-    status = psa_cipher_encrypt_setup(&operation, handle, alg);
+    status = psa_cipher_encrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin cipher operation\n");
+        printf("Failed to begin cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_generate_iv(&operation, iv, sizeof(iv), &iv_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate IV\n");
+        printf("Failed to generate IV (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_update(&operation, plaintext, sizeof(plaintext),
                                output, sizeof(output), &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to update cipher operation\n");
+        printf("Failed to update cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_finish(&operation, output + output_len,
                                sizeof(output) - output_len, &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish cipher operation\n");
+        printf("Failed to finish cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     printf("Encrypted plaintext\n");
@@ -268,9 +245,7 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_cipher_abort(&operation);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
@@ -282,56 +257,48 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
     psa_cipher_operation_t operation = PSA_CIPHER_OPERATION_INIT;
-    uint8_t ciphertext[block_size] = SOME_CIPHERTEXT;
+    static const uint8_t ciphertext[block_size] = SOME_CIPHERTEXT;
     uint8_t iv[block_size] = ENCRYPTED_WITH_IV;
     uint8_t output[block_size];
     size_t output_len;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Decrypt with cipher...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS)
-    {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key */
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DECRYPT);
     psa_set_key_algorithm(&attributes, alg);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, key_len, &handle);
+    status = psa_import_key(&attributes, key, key_len, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
 
     /* Decrypt the ciphertext */
-    status = psa_cipher_decrypt_setup(&operation, handle, alg);
+    status = psa_cipher_decrypt_setup(&operation, id, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin cipher operation\n");
+        printf("Failed to begin cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_set_iv(&operation, iv, sizeof(iv));
     if (status != PSA_SUCCESS) {
-        printf("Failed to set IV\n");
+        printf("Failed to set IV (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_update(&operation, ciphertext, sizeof(ciphertext),
                                output, sizeof(output), &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to update cipher operation\n");
+        printf("Failed to update cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_cipher_finish(&operation, output + output_len,
                                sizeof(output) - output_len, &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish cipher operation\n");
+        printf("Failed to finish cipher operation (%" PRIu32 ")\n", status);
         return;
     }
     printf("Decrypted ciphertext\n");
@@ -340,9 +307,7 @@ static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
     psa_cipher_abort(&operation);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void hash_a_message(void)
@@ -350,35 +315,28 @@ static void hash_a_message(void)
     psa_status_t status;
     psa_algorithm_t alg = PSA_ALG_SHA_256;
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    unsigned char input[] = { 'a', 'b', 'c' };
+    static const unsigned char input[] = { 'a', 'b', 'c' };
     unsigned char actual_hash[PSA_HASH_MAX_SIZE];
     size_t actual_hash_len;
 
     printf("Hash a message...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     /* Compute hash of message  */
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin hash operation\n");
+        printf("Failed to begin hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_update(&operation, input, sizeof(input));
     if (status != PSA_SUCCESS) {
-        printf("Failed to update hash operation\n");
+        printf("Failed to update hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_finish(&operation, actual_hash, sizeof(actual_hash),
                              &actual_hash_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to finish hash operation\n");
+        printf("Failed to finish hash operation (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -386,8 +344,6 @@ static void hash_a_message(void)
 
     /* Clean up hash operation context */
     psa_hash_abort(&operation);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void verify_a_hash(void)
@@ -395,8 +351,8 @@ static void verify_a_hash(void)
     psa_status_t status;
     psa_algorithm_t alg = PSA_ALG_SHA_256;
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    unsigned char input[] = { 'a', 'b', 'c' };
-    unsigned char expected_hash[] = {
+    static const unsigned char input[] = { 'a', 'b', 'c' };
+    static const unsigned char expected_hash[] = {
         0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
         0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
@@ -406,27 +362,20 @@ static void verify_a_hash(void)
     printf("Verify a hash...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     /* Verify message hash */
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin hash operation\n");
+        printf("Failed to begin hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_update(&operation, input, sizeof(input));
     if (status != PSA_SUCCESS) {
-        printf("Failed to update hash operation\n");
+        printf("Failed to update hash operation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_hash_verify(&operation, expected_hash, expected_hash_len);
     if (status != PSA_SUCCESS) {
-        printf("Failed to verify hash\n");
+        printf("Failed to verify hash (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -434,8 +383,6 @@ static void verify_a_hash(void)
 
     /* Clean up hash operation context */
     psa_hash_abort(&operation);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void generate_a_random_value(void)
@@ -446,23 +393,13 @@ static void generate_a_random_value(void)
     printf("Generate random...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     status = psa_generate_random(random, sizeof(random));
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate a random value\n");
+        printf("Failed to generate a random value (%" PRIu32 ")\n", status);
         return;
     }
 
     printf("Generated random data\n");
-
-    /* Clean up */
-    mbedtls_psa_crypto_free();
 }
 
 static void derive_a_new_key_from_an_existing_key(void)
@@ -485,18 +422,11 @@ static void derive_a_new_key_from_an_existing_key(void)
         PSA_KEY_DERIVATION_OPERATION_INIT;
     size_t derived_bits = 128;
     size_t capacity = PSA_BITS_TO_BYTES(derived_bits);
-    psa_key_handle_t base_key;
-    psa_key_handle_t derived_key;
+    psa_key_id_t base_key;
+    psa_key_id_t derived_key;
 
     printf("Derive a key (HKDF)...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     /* Import a key for use in key derivation. If such a key has already been
      * generated or imported, you can skip this part. */
@@ -505,7 +435,7 @@ static void derive_a_new_key_from_an_existing_key(void)
     psa_set_key_type(&attributes, PSA_KEY_TYPE_DERIVE);
     status = psa_import_key(&attributes, key, sizeof(key), &base_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -513,33 +443,33 @@ static void derive_a_new_key_from_an_existing_key(void)
     /* Derive a key */
     status = psa_key_derivation_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
-        printf("Failed to begin key derivation\n");
+        printf("Failed to begin key derivation (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_set_capacity(&operation, capacity);
     if (status != PSA_SUCCESS) {
-        printf("Failed to set capacity\n");
+        printf("Failed to set capacity (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_bytes(&operation,
                                             PSA_KEY_DERIVATION_INPUT_SALT,
                                             salt, sizeof(salt));
     if (status != PSA_SUCCESS) {
-        printf("Failed to input salt (extract)\n");
+        printf("Failed to input salt (extract) (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_key(&operation,
                                           PSA_KEY_DERIVATION_INPUT_SECRET,
                                           base_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to input key (extract)\n");
+        printf("Failed to input key (extract) (%" PRIu32 ")\n", status);
         return;
     }
     status = psa_key_derivation_input_bytes(&operation,
                                             PSA_KEY_DERIVATION_INPUT_INFO,
                                             info, sizeof(info));
     if (status != PSA_SUCCESS) {
-        printf("Failed to input info (expand)\n");
+        printf("Failed to input info (expand) (%" PRIu32 ")\n", status);
         return;
     }
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_ENCRYPT);
@@ -549,7 +479,7 @@ static void derive_a_new_key_from_an_existing_key(void)
     status = psa_key_derivation_output_key(&attributes, &operation,
                                            &derived_key);
     if (status != PSA_SUCCESS) {
-        printf("Failed to derive key\n");
+        printf("Failed to derive key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
@@ -562,8 +492,6 @@ static void derive_a_new_key_from_an_existing_key(void)
     /* Destroy the keys */
     psa_destroy_key(derived_key);
     psa_destroy_key(base_key);
-
-    mbedtls_psa_crypto_free();
 }
 
 static void authenticate_and_encrypt_a_message(void)
@@ -587,17 +515,10 @@ static void authenticate_and_encrypt_a_message(void)
     size_t output_length = 0;
     size_t tag_length = 16;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Authenticate encrypt...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     output_size = sizeof(input_data) + tag_length;
     output_data = (uint8_t *)malloc(output_size);
@@ -611,18 +532,18 @@ static void authenticate_and_encrypt_a_message(void)
     psa_set_key_algorithm(&attributes, PSA_ALG_CCM);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, sizeof(key), &handle);
+    status = psa_import_key(&attributes, key, sizeof(key), &id);
     psa_reset_key_attributes(&attributes);
 
     /* Authenticate and encrypt */
-    status = psa_aead_encrypt(handle, PSA_ALG_CCM,
+    status = psa_aead_encrypt(id, PSA_ALG_CCM,
                               nonce, sizeof(nonce),
                               additional_data, sizeof(additional_data),
                               input_data, sizeof(input_data),
                               output_data, output_size,
                               &output_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to authenticate and encrypt\n");
+        printf("Failed to authenticate and encrypt (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -632,9 +553,7 @@ static void authenticate_and_encrypt_a_message(void)
     free(output_data);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void authenticate_and_decrypt_a_message(void)
@@ -657,17 +576,10 @@ static void authenticate_and_decrypt_a_message(void)
     size_t output_size = 0;
     size_t output_length = 0;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Authenticate decrypt...\t");
     fflush(stdout);
-
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
 
     output_size = sizeof(input_data);
     output_data = (uint8_t *)malloc(output_size);
@@ -681,22 +593,22 @@ static void authenticate_and_decrypt_a_message(void)
     psa_set_key_algorithm(&attributes, PSA_ALG_CCM);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&attributes, 128);
-    status = psa_import_key(&attributes, key, sizeof(key), &handle);
+    status = psa_import_key(&attributes, key, sizeof(key), &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to import a key\n");
+        printf("Failed to import a key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
 
     /* Authenticate and decrypt */
-    status = psa_aead_decrypt(handle, PSA_ALG_CCM,
+    status = psa_aead_decrypt(id, PSA_ALG_CCM,
                               nonce, sizeof(nonce),
                               additional_data, sizeof(additional_data),
                               input_data, sizeof(input_data),
                               output_data, output_size,
                               &output_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to authenticate and decrypt\n");
+        printf("Failed to authenticate and decrypt (%" PRIu32 ")\n", status);
         return;
     }
 
@@ -706,9 +618,7 @@ static void authenticate_and_decrypt_a_message(void)
     free(output_data);
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 static void generate_and_export_a_public_key()
@@ -720,50 +630,48 @@ static void generate_and_export_a_public_key()
     size_t exported_length = 0;
     static uint8_t exported[PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(key_bits)];
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_key_handle_t handle;
+    psa_key_id_t id;
 
     printf("Generate a key pair...\t");
     fflush(stdout);
 
-    /* Initialize PSA Crypto */
-    status = psa_crypto_init();
-    if (status != PSA_SUCCESS) {
-        printf("Failed to initialize PSA Crypto\n");
-        return;
-    }
-
     /* Generate a key */
-    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
     psa_set_key_algorithm(&attributes,
                           PSA_ALG_DETERMINISTIC_ECDSA(PSA_ALG_SHA_256));
     psa_set_key_type(&attributes,
-                     PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_CURVE_SECP256R1));
+                     PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, key_bits);
-    status = psa_generate_key(&attributes, &handle);
+    status = psa_generate_key(&attributes, &id);
     if (status != PSA_SUCCESS) {
-        printf("Failed to generate key\n");
+        printf("Failed to generate key (%" PRIu32 ")\n", status);
         return;
     }
     psa_reset_key_attributes(&attributes);
 
-    status = psa_export_public_key(handle, exported, sizeof(exported),
+    status = psa_export_public_key(id, exported, sizeof(exported),
                                    &exported_length);
     if (status != PSA_SUCCESS) {
-        printf("Failed to export public key %ld\n", status);
+        printf("Failed to export public key (%" PRIu32 ")\n", status);
         return;
     }
 
     printf("Exported a public key\n");
 
     /* Destroy the key */
-    psa_destroy_key(handle);
-
-    mbedtls_psa_crypto_free();
+    psa_destroy_key(id);
 }
 
 int main(void)
 {
-    printf("-- Begin Mbed Crypto Getting Started --\n\n");
+    printf("-- Begin PSA Crypto Getting Started --\n\n");
+
+    /* Initialize PSA Crypto */
+    psa_status_t status = psa_crypto_init();
+    if (status != PSA_SUCCESS) {
+        printf("Failed to initialize PSA Crypto (%" PRIu32 ")\n", status);
+        return -1;
+    }
 
     import_a_key(AES_KEY, sizeof(AES_KEY));
     sign_a_message_using_rsa(RSA_KEY, sizeof(RSA_KEY));
@@ -777,8 +685,8 @@ int main(void)
     authenticate_and_decrypt_a_message();
     generate_and_export_a_public_key();
 
-    printf("\n-- End Mbed Crypto Getting Started --\n");
+    printf("\n-- End PSA Crypto Getting Started --\n");
 
     return 0;
 }
-#endif /* MBEDTLS_PSA_CRYPTO_C */
+#endif /* PSA_CRYPTO_API_VERSION_MAJOR */

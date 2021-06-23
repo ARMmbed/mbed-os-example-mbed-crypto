@@ -16,11 +16,7 @@
 
 language: sh
 os: linux
-dist: xenial
-
-env:
-  global:
-    - PROFILE=develop
+dist: focal
 
 cache:
   pip: true
@@ -33,9 +29,8 @@ cache:
 addons:
   apt:
     sources:
-      - sourceline: 'deb https://apt.kitware.com/ubuntu/ xenial main'
+      - sourceline: 'deb https://apt.kitware.com/ubuntu/ focal main'
         key_url: 'https://apt.kitware.com/keys/kitware-archive-latest.asc'
-      - sourceline: 'deb https://apt.kitware.com/ubuntu/ xenial-rc main'
     packages:
       - cmake
       - ninja-build
@@ -45,7 +40,7 @@ matrix:
 
     - &cmake-build-test
       stage: "CMake"
-      name: "CMake Mbed Crypto example - develop (K64F)"
+      name: "CMake PSA Crypto example - develop (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=develop  CACHE_NAME=develop-K64F
       language: python
       python: 3.8
@@ -74,22 +69,30 @@ matrix:
         # version, we must instead delete the Travis copy of CMake.
         - sudo rm -rf /usr/local/cmake*
         - pip install --upgrade mbed-tools
-        - pip install prettytable==0.7.2
-        - pip install future==0.16.0
-        - pip install "Jinja2>=2.10.1,<2.11"
-        - pip install "intelhex>=1.3,<=2.2.1"
-      script:
         - cd getting-started
-        - mbedtools checkout
-        - echo mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
-        - mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
+        - mbedtools deploy
+        - pip install -r mbed-os/requirements.txt
+      script:
+        - echo mbedtools compile -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
+        - mbedtools compile -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
         - ccache -s
-        - cd ..
 
     - <<: *cmake-build-test
-      name: "CMake Mbed Crypto example - release (K64F)"
+      name: "CMake PSA Crypto example - release (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=release CACHE_NAME=release-K64F
 
     - <<: *cmake-build-test
-      name: "CMake Mbed Crypto example - debug (K64F)"
+      name: "CMake PSA Crypto example - debug (K64F)"
       env: NAME=cmake_test TARGET_NAME=K64F PROFILE=debug CACHE_NAME=debug-K64F
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - develop (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=develop CACHE_NAME=develop-ARM_MUSCA_S1
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - release (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=release CACHE_NAME=release-ARM_MUSCA_S1
+
+    - <<: *cmake-build-test
+      name: "CMake PSA Crypto example - debug (ARM_MUSCA_S1)"
+      env: NAME=cmake_test TARGET_NAME=ARM_MUSCA_S1 PROFILE=debug CACHE_NAME=debug-ARM_MUSCA_S1
