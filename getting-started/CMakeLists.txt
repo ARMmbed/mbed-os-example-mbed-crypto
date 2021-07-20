@@ -9,13 +9,13 @@ set(APP_TARGET getting-started)
 
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
+project(${APP_TARGET})
+
 add_subdirectory(${MBED_PATH})
 
 add_executable(${APP_TARGET})
 
 mbed_configure_app_target(${APP_TARGET})
-
-project(${APP_TARGET})
 
 # Provide Mbed OS with the header file it needs to configure Mbed TLS
 target_include_directories(${APP_TARGET}
