@@ -141,11 +141,19 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_RSA_PKCS1V15_SIGN(PSA_ALG_SHA_256);
     // SHA-256 of {'a', 'b', 'c'}
+#ifdef TARGET_TFM_LATEST
+    static const uint8_t hash[PSA_HASH_LENGTH(PSA_ALG_SHA_256)] = {
+        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
+        0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
+    };
+#else
     static const uint8_t hash[PSA_HASH_SIZE(PSA_ALG_SHA_256)] = {
         0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
         0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
     };
+#endif
     uint8_t signature[PSA_SIGNATURE_MAX_SIZE] = {0};
     size_t signature_length;
     psa_key_id_t id;
@@ -187,9 +195,16 @@ static void sign_a_message_using_rsa(const uint8_t *key, size_t key_len)
 
 static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 {
+
+#ifdef TARGET_TFM_LATEST
+    enum {
+        block_size = PSA_BLOCK_CIPHER_BLOCK_LENGTH(PSA_KEY_TYPE_AES),
+    };
+#else
     enum {
         block_size = PSA_BLOCK_CIPHER_BLOCK_SIZE(PSA_KEY_TYPE_AES),
     };
+#endif
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
@@ -250,9 +265,15 @@ static void encrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 
 static void decrypt_with_symmetric_ciphers(const uint8_t *key, size_t key_len)
 {
+#ifdef TARGET_TFM_LATEST
+    enum {
+        block_size = PSA_BLOCK_CIPHER_BLOCK_LENGTH(PSA_KEY_TYPE_AES),
+    };
+#else
     enum {
         block_size = PSA_BLOCK_CIPHER_BLOCK_SIZE(PSA_KEY_TYPE_AES),
     };
+#endif
     psa_status_t status;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg = PSA_ALG_CBC_NO_PADDING;
@@ -357,7 +378,12 @@ static void verify_a_hash(void)
         0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
     };
+
+#ifdef TARGET_TFM_LATEST
+    size_t expected_hash_len = PSA_HASH_LENGTH(alg);
+#else
     size_t expected_hash_len = PSA_HASH_SIZE(alg);
+#endif
 
     printf("Verify a hash...\t");
     fflush(stdout);
